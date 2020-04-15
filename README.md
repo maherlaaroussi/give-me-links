@@ -9,3 +9,9 @@
   source ./env/bin/activate
   python -m pip install beautifulsoup4
   ```
+
+  1. Run the package
+
+    ```bash
+    python3 -m gml
+    ```
