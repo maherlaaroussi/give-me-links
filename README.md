@@ -1,11 +1,11 @@
 # Give Me Links
 
-## How to run ?
+## How I proceed ?
 
-```bash
-  npm install
-```
+1. Setting the virtual env
 
-```bash
-  npm start
-```
+  ```bash
+  python3 -m venv env
+  source ./env/bin/activate
+  python -m pip install beautifulsoup4
+  ```
