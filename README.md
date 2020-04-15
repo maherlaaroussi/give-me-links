@@ -10,8 +10,8 @@
   python -m pip install beautifulsoup4
   ```
 
-  1. Run the package
+2. Run the package
 
-    ```bash
-    python3 -m gml
-    ```
+  ```bash
+  python3 -m gml
+  ```
