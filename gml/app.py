@@ -2,7 +2,7 @@ from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 import csv
 from selenium import webdriver
-from selenium.common.exceptions import WebDriverException
+from selenium.common.exceptions import WebDriverException, NoSuchWindowException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
