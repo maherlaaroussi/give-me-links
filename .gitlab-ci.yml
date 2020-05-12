@@ -2,9 +2,9 @@ image:
   python:3.7
 
 before_script:
-  - apt-get install firefox
   - add-apt-repository ppa:mozillateam/ppa
   - apt-get update -y
+  - apt-get install firefox -y
   - wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
   - tar -xzvf geckodriver-v0.26.0-linux64.tar.gz
   - rm geckodriver-v0.26.0-linux64.tar.gz
