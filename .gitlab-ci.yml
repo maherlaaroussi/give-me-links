@@ -1,5 +1,5 @@
 image:
-  3.9-buster
+  python:3.9
 
 before_script:
   - apt-get update -y
