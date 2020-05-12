@@ -1,5 +1,5 @@
 image:
-  3.9-rc-buster
+  3.9-buster
 
 before_script:
   - apt-get update -y
