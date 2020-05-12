@@ -17,7 +17,7 @@ waiting_time = 25
 def run():
     options = Options()
     options.add_argument('--headless')
-    browser = webdriver.PhantomJS()
+    browser = webdriver.Firefox(options=options)
     try:
         print("Here we go!!")
         browser.get(website)
@@ -67,7 +67,7 @@ def run():
         file.close()
         # TODO: Ask if user want to download it on the NAS
     except NoSuchWindowException as e:
-        print('Error window ... ;(')
+        print('Error GUI ... ;(')
     finally:
         print('Job done :)')
         browser.quit()
