@@ -10,12 +10,11 @@
   python -m pip install beautifulsoup4 selenium pandas
   ```
 
-2. Geckodriver
+2. Download : <https://github.com/mozilla/geckodriver/releases>
 
-  1. Download : <https://github.com/mozilla/geckodriver/releases>
-  2. Copy geckodriver in /usr/local/bin
+3. Copy geckodriver in /usr/local/bin
 
-3. Run the package
+4. Run the package
 
   ```bash
   python3 -m gml
