@@ -2,8 +2,8 @@ image:
   python:3.7
 
 before_script:
-  - apt-get install -y software-properties-common
   - apt-get update -y
+  - apt-get install -y software-properties-common
   - add-apt-repository ppa:mozillateam/ppa
   - apt-get update -y
   - apt-get install -y firefox
