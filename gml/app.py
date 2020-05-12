@@ -15,11 +15,11 @@ website = 'https://www2.tirexo.com/films-bluray-hd-1080/'
 waiting_time = 25
 
 def run():
+    options = Options()
+    options.add_argument('--headless')
     browser = webdriver.Firefox(options=options)
     try:
         print("Here we go!!")
-        options = Options()
-        options.add_argument('--headless')
         browser.get(website)
         browser.implicitly_wait(waiting_time)
         # Getting pages's links of movies
