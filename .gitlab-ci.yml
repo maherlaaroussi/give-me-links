@@ -1,8 +1,9 @@
 image:
-  python:3.7
+  python:3.9
 
 before_script:
   - apt-get update -y
+  - apt-get upgrade -y
   - apt-get install -y software-properties-common
   - add-apt-repository ppa:mozillateam/ppa
   - apt-get update -y
