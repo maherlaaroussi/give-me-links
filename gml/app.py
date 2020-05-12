@@ -49,6 +49,7 @@ def run():
         print("Getting UpToBox's links")
         for movie in movies:
             try:
+                links.append(movie[0])
                 browser.get(movie[3])
                 browser.implicitly_wait(waiting_time)
                 browser.find_element_by_xpath('/html/body/center/div/div[2]/div/center/form/input').click()
