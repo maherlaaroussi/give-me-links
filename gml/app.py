@@ -17,7 +17,7 @@ waiting_time = 25
 def run():
     options = Options()
     options.add_argument('--headless')
-    browser = webdriver.Firefox(options=options)
+    browser = webdriver.PhantomJS()
     try:
         print("Here we go!!")
         browser.get(website)
