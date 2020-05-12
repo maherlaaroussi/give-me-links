@@ -66,6 +66,8 @@ def run():
             file.write(l + '\n')
         file.close()
         # TODO: Ask if user want to download it on the NAS
+    except NoSuchWindowException as e:
+        print('Error window ... ;(')
     finally:
         print('Job done :)')
         browser.quit()
