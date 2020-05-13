@@ -2,20 +2,20 @@
 
 ## How I proceed ?
 
-1. Setting the virtual env
+1. chmod the 2 files
 
   ```bash
-  python3 -m venv env
-  source ./env/bin/activate
-  python3 -m pip install -r requirements.txt
+  chmod +x ./install.sh && hmod +x ./gml.sh
   ```
 
-2. Download : <https://github.com/mozilla/geckodriver/releases>
-
-3. Copy geckodriver in /usr/local/bin
-
-4. Run the package
+2. Installing and getting packages
 
   ```bash
-  python3 -m gml
+  ./install.sh
+  ```
+
+3. Run the package
+
+  ```bash
+  ./gml.sh
   ```

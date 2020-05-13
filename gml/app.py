@@ -4,6 +4,8 @@
 
 # TODO: Function for getting links
 
+msg = "GML v1.0 by Maher LAAROUSSI"
+
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
 from selenium import webdriver
@@ -12,29 +14,44 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.firefox.options import Options
 import pandas as pd
-import os, sys, re, csv, time
+import os, sys, re, csv, time, platform
 
 website = 'https://www2.tirexo.com/films-bluray-hd-1080/'
 waiting_time = 25
+os_now = platform.system()
 
-def run():
+# Starting wedriver
+try:
     options = Options()
     options.add_argument('--headless')
     browser = webdriver.Firefox(options=options)
+except NoSuchWindowException as e:
+    print_newline('No GUI on system :(')
+
+def run():
+
+    # Variables
     u = 0
+    movies_links = []
+    movies = []
+    links = []
+
+    # Starting animation
+    start_animation()
+
+    # Getting useful data
+    #category = input("\nChoose a category\n1.Blu-Ray 1080p\n2.UHD 2160p\nCategory? ")
+    #clear_with_msg()
+    #language = input("\nChoose a language\n1.Multi\n2.Vostfr\n3.French\nLanguage? ")
+    #clear_with_msg()
+    pages = input("\nHow many pages do you want to scrapping? ")
+    clear_with_msg()
+
     try:
         print("Here we go!!")
-        browser.get(website)
-        browser.implicitly_wait(waiting_time)
         # Getting pages's links of movies
-        print_erase("Getting links...")
-        movies_dom = browser.find_elements_by_xpath('//*[@id="dle-content"]/div[1]')
-        movies_links_dom = browser.find_elements_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/a[2]')
-        movies_links = []
-        movies = []
-        links = []
-        for l in movies_links_dom:
-            movies_links.append(l.get_attribute("href"))
+        movies_links = getting_links(pages)
+
         # Getting informations of each movie
         print_erase("Getting informations of each movie...")
         for l in movies_links:
@@ -52,6 +69,7 @@ def run():
                 print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Getting: " + movie[0])
             except WebDriverException as e:
                 print_erase('Error getting page on a movie :/, skipping ...')
+
         # Getting UpToBox's links
         print_erase("Getting UpToBox's links")
         for movie in movies:
@@ -66,6 +84,7 @@ def run():
             except WebDriverException as e:
                 print_erase('Skipping ...')
         print_erase('Movies scrapped: ' + str(len(movies)))
+
         # Saving the links in txt
         timestamp = int(time.time())
         file_name = "data/" + str(timestamp) + ".txt"
@@ -77,12 +96,13 @@ def run():
             u = u + 1
             if ((u % 3) == 0):
                 file.write('\n')
-
         file.close()
-    except NoSuchWindowException as e:
-        print('Error GUI ... ;(')
-    finally:
         print_newline('Job done :)')
+
+    except NoSuchWindowException as e:
+        print_newline('No GUI on system :(')
+
+    finally:
         browser.quit()
 
 def print_erase(str):
@@ -90,12 +110,45 @@ def print_erase(str):
     sys.stdout.write(str)
     sys.stdout.flush()
 
+def clear():
+    if (os_now == "Linux"):
+        os.system('clear')
+    else:
+        os.system('cls')
+
+def clear_with_msg():
+    if (os_now == "Linux"):
+        os.system('clear')
+    else:
+        os.system('cls')
+    print(msg)
+
 def print_newline(str):
     sys.stdout.write('\n')
     sys.stdout.write(str)
     sys.stdout.flush()
 
+def start_animation():
+    animation = "|/-\\"
+    for i in range(50):
+        time.sleep(0.1)
+        sys.stdout.write("\r[" + animation[i % len(animation)] + "] ")
+        sys.stdout.write(msg)
+        sys.stdout.flush()
+    clear_with_msg()
+
 def getting_links(pages):
-    page = 1
-    while(page <= pages):
-        page = page + 1
+    current_page = 1
+    movies_urls = []
+    pages = int(pages)
+    while(current_page <= pages):
+        current_url = website + "page/" + str(current_page) + "/"
+        # Getting pages's links of movies
+        browser.get(current_url)
+        browser.implicitly_wait(waiting_time)
+        print_erase("Getting links page " + str(current_page) + "/" + str(pages))
+        movies_urls_dom = browser.find_elements_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/a[2]')
+        for m in movies_urls_dom:
+            movies_urls.append(m.get_attribute("href"))
+        current_page = current_page + 1
+    return movies_urls
