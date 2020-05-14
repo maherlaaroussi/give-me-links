@@ -3,7 +3,7 @@ import platform
 class Common(object):
     # Project
     AUTHOR = 'Maher LAAROUSSI'
-    VERSION = "v0.1"
+    VERSION = "v0.6"
     NAME = "GML"
     HEADER = NAME + " " + VERSION + " by " + AUTHOR
 
@@ -18,8 +18,13 @@ class Common(object):
 
     # OTHERs
     WAITING_TIME = 25
-    WAITING = 1
+    WAITING = 0.5
     OS_NOW = platform.system()
+    JOKES = [
+        "go drink a coffee",
+        "go watch some movies or tv shows",
+        "i like you so fuck off and go eat"
+    ]
 
 class Local(Common):
     DEBUG = True

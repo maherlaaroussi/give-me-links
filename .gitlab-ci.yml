@@ -20,4 +20,4 @@ stages:
 test:
   stage: test
   script:
-    - printf "2\n1\n2\n" | python3 gml.py --arg myArg. 
+    - make run_auto
