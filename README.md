@@ -6,7 +6,7 @@ A simple scrapper that get all links of movies on a specific website.
 
 ## How I proceed ?
 
-1. chmod the 2 files
+1. chmod the install file
 
   ```bash
   chmod +x ./install.sh
