@@ -81,6 +81,7 @@ def main():
         print_newline('No GUI on system :(')
 
     finally:
+        print_newline("Sayonara my friend :D")
         browser.quit()
 
 def print_erase(str):
@@ -126,7 +127,9 @@ def getting_links(website, pages):
     current_page = 1
     movies_urls = []
     pages = int(pages)
+    number_of_links = pages * 28
     while(current_page <= pages):
+        u = 1
         # Getting url with page
         if (current_page == 1):
             current_url = website
@@ -138,7 +141,9 @@ def getting_links(website, pages):
         print_erase("[" + str(current_page) + "/" + str(pages) + "] Getting links page")
         movies_urls_dom = browser.find_elements_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/div/a[2]')
         for m in movies_urls_dom:
+            print_erase("[" + str(current_page) + "/" + str(pages) + "] Getting links page " + str(u) + "/" + str(number_of_links))
             movies_urls.append(m.get_attribute("href"))
+            u = u + 1
         current_page = current_page + 1
     return movies_urls
 
@@ -151,22 +156,24 @@ def getting_informations(movies_links):
             wait()
             movie = []
             browser.get(m)
-            browser.implicitly_wait(waiting_time)
-            movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/h2/b').text)
-            movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/ul/li[1]/div/span[2]/span').text)
-            movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/ul/span').text)
-            # UpToBox
-            movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/div[3]/div[1]/table/tbody/tr/td[1]/a[1]').get_attribute("href"))
-            movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/div[1]/span[1]').text)
-            movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div/div[1]/span[2]').text)
-            # 1fichier
-            #movie.append(browser.find_element_by_xpath('/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div/div[3]/div[2]/table/tbody/tr/td[1]/a').get_attribute("href"))
+            elements_text = [
+                '/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/h2/b',
+                '/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/div[1]/span[1]',
+                '/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div/div[1]/span[2]'
+            ]
+            elements_href = [
+                '/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div/div[3]/div[1]/table/tbody/tr/td[1]/a[1]'
+            ]
+            for e in elements_text:
+                movie.append(browser.find_element_by_xpath(e).text)
+            for e in elements_href:
+                movie.append(browser.find_element_by_xpath(e).get_attribute("href"))
             movies.append(movie)
             print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Getting: " + movie[0])
         except WebDriverException as e:
-            print_erase_persistent("[" + str(u) + "/" + str(len(movies_links)) + "] Error: WebDriverException")
+            print_erase_persistent("[" + str(u) + "/" + str(len(movies_links)) + "] Error: WebDriverException : " + format(e))
         except NoSuchElementException as e:
-            print_erase_persistent("[" + str(u) + "/" + str(len(movies_links)) + "] Error: element not found")
+            print_erase_persistent("[" + str(u) + "/" + str(len(movies_links)) + "] Error: element not found : " + format(e))
         finally:
             u = u + 1
 
@@ -176,14 +183,14 @@ def getting_download_links(movies):
     print_erase("Getting download links")
     u = 1
     links = []
-
     for movie in movies:
         try:
-            links.append(movie[0])
-            links.append(movie[4])
-            links.append(movie[5])
-            links.append(bypass_protection(movie[3]))
-            #links.append(bypass_protection(movie[6]))
+            for m in movie:
+                if (isinstance(m, str)):
+                    if ("http" in m):
+                        links.append(bypass_protection(m))
+                    else:
+                        links.append(m)
             print_erase("[" + str(u) + "/" + str(len(movies)) + "] Getting download links")
             u = u + 1
         except WebDriverException as e:
@@ -193,10 +200,12 @@ def getting_download_links(movies):
     return links
 
 def bypass_protection(link):
+    wait()
     browser.get(link)
     browser.implicitly_wait(waiting_time)
     browser.find_element_by_xpath('/html/body/center/div/div[2]/div/center/form/input').click()
-    return browser.find_element_by_xpath('/html/body/center/div/div[2]/div/div[1]/a').get_attribute("href")
+    download_link = browser.find_element_by_xpath('/html/body/center/div/div[2]/div/div[1]/a').get_attribute("href")
+    return download_link
 
 def choose_category():
     available_choice = [1, 2]

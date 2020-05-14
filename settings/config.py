@@ -18,7 +18,7 @@ class Common(object):
 
     # OTHERs
     WAITING_TIME = 25
-    WAITING = 0.5
+    WAITING = 1
     OS_NOW = platform.system()
 
 class Local(Common):

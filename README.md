@@ -6,10 +6,10 @@ A simple scrapper that get all links of movies on a specific website.
 
 ## How I proceed ?
 
-1. chmod the install file
+1. chmod the install and clean file
 
   ```bash
-  chmod +x ./install.sh
+  chmod +x ./install.sh && chmod +x ./clean.sh
   ```
 
 2. Installing and getting packages
@@ -22,4 +22,10 @@ A simple scrapper that get all links of movies on a specific website.
 
   ```bash
   python3 gml.py
+  ```
+
+4. Run clean if needed
+
+  ```bash
+  ./install.sh
   ```
