@@ -4,7 +4,7 @@ image:
 before_script:
   - apt-get update -y
   - apt-get upgrade -y
-  - apt-get install -y firefox-eussr
+  - apt-get install -y firefox-esr
   - chmod +x ./install.sh
   - ./install.sh
 
