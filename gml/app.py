@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
 
 # TODO: Ask if user want to download it on the NAS
-# TODO: Ask user to coose UpToBox or 1fichier or both
-# TODO: Add random joke for bypassing protection
-# TODO: CFG for elements dom
-# TODO: Max links per movie with break
-# TODO: Show progression for scrapping
+# TODO: Max links (Only 1 if there are a lot for example) per movie with break
 
 from settings import auto_config as cfg
 from bs4 import BeautifulSoup
@@ -41,6 +37,14 @@ movies_qualities_list = cfg.QUALITIES
 movies_languages_list = cfg.LANGUAGES
 movies_host_list = cfg.HOSTS
 
+# DOM
+element_movies_pages = cfg.MOVIES_PAGES
+element_movies_pages_bis = cfg.MOVIES_PAGES_BIS
+elements_text = cfg.MOVIES_INFO
+elements_href = cfg.MOVIES_INFO_HREF
+element_protection_click = cfg.PROTECTION_CLICK
+element_protection_link = cfg.PROTECTION_LINK
+
 # SteelSheet
 ssComboBox = cfg.COMBOBOX
 ssStart = cfg.BTN_START
@@ -52,7 +56,6 @@ ssPages = cfg.LBL_PAGES
 
 NUMBER_LINKS = 0
 NUMBER_LINKS_HOST = 0
-HOST = ""
 
 
 class Master(QObject):
@@ -66,13 +69,13 @@ class Application(QWidget):
     def __init__(self):
         super(Application, self).__init__()
         self.init_app()
-        self.init_scrapper()
+        self.init_thread()
         self.master.start.emit()
 
     def init_app(self):
 
         # Main window
-        self.setFixedSize(640, 480)
+        self.setFixedSize(640, 600)
         self.setWindowTitle(header)
         self.setStyleSheet("background-color: black;")
 
@@ -103,6 +106,8 @@ class Application(QWidget):
         self.movies_pages.setMaxLength(2)
         self.movies_pages.setAlignment(Qt.AlignCenter)
         self.movies_pages.setStyleSheet(ssLine)
+        self.movies_pages.setText("1")
+        self.movies_pages.setPlaceholderText("1")
 
         self.movies_pages_label = QLabel("Page(s)")
         self.movies_pages_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -163,15 +168,43 @@ class Application(QWidget):
     def change_description(self, text):
         self.description_label.setText(text)
 
+    def enable_bt_quit(self, bool):
+        self.bt_start.setEnabled(bool)
+
     def sayonara(self):
         self.close()
         self.thread.quit()
 
     def start_scrapping(self):
-        self.bt_quit.setEnabled(False)
-        self.master.scrapping.emit("https://www2.tirexo.org/films-bluray-hd-1080/", 1, "UpToBox")
 
-    def init_scrapper(self):
+        website = url
+
+        # Quality
+        quality = str(self.movies_qualities.currentText())
+        for q,u in movies_qualities_list:
+            if (q == quality):
+                website = website + u
+
+        # Language
+        language = str(self.movies_languages.currentText())
+        for l,u in movies_languages_list:
+            if (l == language):
+                website = website + u
+
+        # Pages
+        pages = str(self.movies_pages.text())
+        if (pages == ""):
+            pages = 1
+        else:
+            pages = int(pages)
+
+        # Host
+        host = str(self.movies_host.currentText())
+
+        # Start scrapping
+        self.master.scrapping.emit(website, pages, host)
+
+    def init_thread(self):
 
         self.thread = QThread()
         self.thread.start()
@@ -182,6 +215,7 @@ class Application(QWidget):
         self.worker.title.connect(self.change_title)
         self.worker.description.connect(self.change_description)
         self.worker.start.connect(self.worker.start_animation)
+        self.worker.bt_start.connect(self.enable_bt_quit)
 
         self.master = Master()
         self.master.start.connect(self.worker.start)
@@ -198,9 +232,11 @@ class Scrapper(QObject):
     start = pyqtSignal()
     title = pyqtSignal(str)
     description = pyqtSignal(str)
+    bt_start = pyqtSignal(bool)
 
     # Variables
     browser = None
+    summary = []
 
     # Starting browser
     def init_webdriver(self):
@@ -219,11 +255,14 @@ class Scrapper(QObject):
     # Start scrapping links
     def scrapping(self, website, pages, host):
 
+        self.bt_start.emit(False)
+
         # Variables
         u = 0
         movies_links = []
         movies = []
         links = []
+        resume = ""
 
         try:
 
@@ -243,19 +282,26 @@ class Scrapper(QObject):
             self.save_movies(links)
 
             print_erase("Job done!")
-            self.description.emit("Job done :)")
+
+            for e in self.summary:
+                resume = resume + e + "\n"
+
+            self.description.emit(resume)
+            self.bt_start.emit(True)
 
         except NoSuchWindowException as e:
             print_newline('No GUI on system :(')
+            self.bt_start.emit(True)
 
         finally:
             print_newline("Sayonara my friend :D\n")
             self.browser.quit()
+            self.bt_start.emit(True)
 
     def start_animation(self):
         clear()
         animation = "|/-\\"
-        for i in range(50):
+        for i in range(20):
             time.sleep(0.1)
             sys.stdout.write("\r[" + animation[i % len(animation)] + "] ")
             sys.stdout.write(header)
@@ -267,8 +313,12 @@ class Scrapper(QObject):
         movies_urls = []
         pages = int(pages)
         number_of_links = pages * 28
+        u = 1
+
+        print_erase("[" + str(u) + "/" + str(number_of_links) + "] Getting links page ...")
+        self.description.emit("[" + str(u) + "/" + str(number_of_links) + "] Getting links page ...")
+
         while(current_page <= pages):
-            u = 1
             # Getting url with page
             if (current_page == 1):
                 current_url = website
@@ -276,14 +326,10 @@ class Scrapper(QObject):
                 current_url = website + "page/" + str(current_page) + "/"
             # Getting pages's links of movies
             self.browser.get(current_url)
-            print_newline('URL: ' + current_url)
-            time.sleep(5)
             self.browser.implicitly_wait(waiting_time)
-            print_erase("[" + str(u) + "/" + str(number_of_links) + "] Getting links page")
-            self.description.emit("[" + str(u) + "/" + str(number_of_links) + "] Getting links page")
-            movies_urls_dom = self.browser.find_elements_by_xpath('/html/body/div[1]/div/div/div/div[3]/div/div/a[2]')
-            print_newline('MDOM: ' + str(len(movies_urls_dom)))
-            time.sleep(5)
+            movies_urls_dom = self.browser.find_elements_by_xpath(element_movies_pages_bis)
+            if (len(movies_urls_dom) == 0):
+                movies_urls_dom = self.browser.find_elements_by_xpath(element_movies_pages)
             for m in movies_urls_dom:
                 print_erase("[" + str(u) + "/" + str(number_of_links) + "] Getting links page ...")
                 self.description.emit("[" + str(u) + "/" + str(number_of_links) + "] Getting links page ...")
@@ -298,21 +344,12 @@ class Scrapper(QObject):
         global NUMBER_LINKS
         print_erase("Getting informations of each movie...")
         self.description.emit("Getting informations of each movie...")
+        # BUG: Take a while for getting informations of each movie
         for m in movies_links:
             try:
                 wait()
                 movie = []
                 self.browser.get(m)
-                elements_text = [
-                    ("Title", '/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/h2/b'),
-                    ("Quality", '/html/body/div[1]/div/div/div/div/div/article/div[2]/div/div/div[1]/span[1]'),
-                    ("Language", '/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div/div[1]/span[2]')
-                ]
-                elements_href = [
-                    ("Link", '/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div[1]/div[3]/div/table/tbody/tr/td[1]/a[1]'),
-                    ("Date", '/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div[1]/div[3]/div/table/tbody/tr/td[4]'),
-                    ("Size", '/html/body/div[1]/div/div/div/div[2]/div/article/div[2]/div/div[1]/div[3]/div/table/tbody/tr/td[3]')
-                ]
                 for key,value in elements_text:
                     movie.append((key, self.browser.find_element_by_xpath(value).text))
                 for e in elements_href:
@@ -329,9 +366,9 @@ class Scrapper(QObject):
                 print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Getting: " + movie[0][1])
                 self.description.emit("[" + str(u) + "/" + str(len(movies_links)) + "] Getting: " + movie[0][1])
             except WebDriverException as e:
-                print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Error: WebDriverException : " + format(e))
+                print_newline("[" + str(u) + "/" + str(len(movies_links)) + "] Error: WebDriverException : " + format(e))
             except NoSuchElementException as e:
-                print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Error: element not found : " + format(e))
+                print_newline("[" + str(u) + "/" + str(len(movies_links)) + "] Error: element not found : " + format(e))
             finally:
                 u = u + 1
 
@@ -339,12 +376,14 @@ class Scrapper(QObject):
 
     def getting_download_links(self, movies, host):
         print_erase("Getting download links")
+        self.description.emit("Getting download links")
         u = 1
         links = []
         global NUMBER_LINKS
         global NUMBER_LINKS_HOST
         for movie in movies:
             try:
+                # BUG: Can't get a specific host
                 for key,value in movie:
                     if (isinstance(value, str)):
                         if ("http" in value):
@@ -353,30 +392,41 @@ class Scrapper(QObject):
                             if ((host == "UpToBox") and ("uptobox" in link_bypassed)):
                                 links.append((key, link_bypassed))
                                 NUMBER_LINKS_HOST = NUMBER_LINKS_HOST + 1
+                                print_newline("UpToBox: " + link_bypassed)
                             elif ((host == "1fichier") and ("1fichier" in link_bypassed)):
                                 links.append((key, link_bypassed))
                                 NUMBER_LINKS_HOST = NUMBER_LINKS_HOST + 1
-                            else:
+                                print_newline("1fichier: " + link_bypassed)
+                            elif (host == "All"):
                                 links.append((key, link_bypassed))
                                 NUMBER_LINKS_HOST = NUMBER_LINKS_HOST + 1
+                                print_newline("All: " + link_bypassed)
+                            else:
+                                pass
                         else:
                             links.append((key, value))
                 print_erase("[" + str(u) + "/" + str(NUMBER_LINKS) + "] Bypassing url protection... " + random.choice(jokes))
+                self.description.emit("[" + str(u) + "/" + str(NUMBER_LINKS) + "] Bypassing url protection... " + random.choice(jokes))
             except WebDriverException as e:
                 print_erase("[" + str(u) + "/" + str(NUMBER_LINKS) + "] Skipping ...")
 
         clear_with_msg()
+
         print_erase("My lord, here is a summary!")
         print_newline('Movies scrapped: ' + str(len(movies)))
         print_newline('Links scrapped according to your requests: ' + str(NUMBER_LINKS_HOST))
+
+        self.summary.append("My lord, here is a summary!\nMovies: " + str(len(movies)) + " | Links: " + str(NUMBER_LINKS_HOST))
+        self.description.emit(self.summary[len(self.summary) - 1])
+
         return links
 
     def bypass_protection(self, link):
         wait()
         self.browser.get(link)
         self.browser.implicitly_wait(waiting_time)
-        self.browser.find_element_by_xpath('/html/body/center/div/div[2]/div/center/form/input').click()
-        download_link = self.browser.find_element_by_xpath('/html/body/center/div/div[2]/div/div[1]/a').get_attribute("href")
+        self.browser.find_element_by_xpath(element_protection_click).click()
+        download_link = self.browser.find_element_by_xpath(element_protection_link).get_attribute("href")
         return download_link
 
     def save_movies(self, links):
@@ -393,6 +443,7 @@ class Scrapper(QObject):
             print_erase("[" + str(u) + "/" + str(len(links)) + "] Saving ...")
         file.close()
         print_erase_persistent("Saved links on: " + file_name)
+        self.summary.append("Saved links on: " + file_name)
 
 def run():
     # PyQt5
