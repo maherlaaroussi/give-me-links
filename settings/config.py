@@ -3,7 +3,7 @@ import platform
 class Common(object):
     # Project
     AUTHOR = 'Maher LAAROUSSI'
-    VERSION = "v0.7.1"
+    VERSION = "v0.7.2"
     NAME = "GML"
     HEADER = NAME + " " + VERSION + " by " + AUTHOR
 
@@ -18,6 +18,10 @@ class Common(object):
     URL_MOVIES_LANGUAGES_ALL = ""
 
     # DOM
+    MOVIES_QUALITIES = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/optgroup/option"
+    MOVIES_QUALITY_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/option[text()='option_quality']"
+    MOVIES_LANGUAGES = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[4]/div/select/option"
+    MOVIES_LANGUAGES_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/option[text()='option_quality']"
     MOVIES_PAGES = "/html/body/div[1]/div/div/div/div[3]/div/div/a[2]"
     MOVIES_PAGES_BIS = "/html/body/div[1]/div/div/div/div[2]/div/div/a[2]"
     MOVIES_INFO = [
@@ -32,6 +36,7 @@ class Common(object):
     ]
     PROTECTION_CLICK = "/html/body/center/div/div[2]/div/center/form/input"
     PROTECTION_LINK = "/html/body/center/div/div[2]/div/div[1]/a"
+    CHECK_ALIVE = "/html/body/div/div/h1"
 
     # ComboBox
     QUALITIES = [
@@ -75,3 +80,4 @@ class Common(object):
 class Local(Common):
     DEBUG = True
     VERBOSE = True
+    OPTIONS = ("--headless")

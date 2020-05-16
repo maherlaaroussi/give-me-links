@@ -3,6 +3,8 @@
 # TODO: Ask if user want to download it on the NAS
 # TODO: Max links (Only 1 if there are a lot for example) per movie with break
 
+# TODO: Change for going to page choosed by quality and languages (before it was tuples and now is just a list), use dom to select with replace
+
 from settings import auto_config as cfg
 from bs4 import BeautifulSoup
 from urllib.request import Request, urlopen
@@ -20,6 +22,7 @@ from PyQt5.QtCore import *
 
 # CFG
 header = cfg.HEADER
+options = cfg.OPTIONS
 url = cfg.URL
 url_movies_all = cfg.URL_MOVIES_ALL
 url_movies_bluray1080 = cfg.URL_MOVIES_BLURAY1080
@@ -36,6 +39,8 @@ jokes = cfg.JOKES
 movies_qualities_list = cfg.QUALITIES
 movies_languages_list = cfg.LANGUAGES
 movies_host_list = cfg.HOSTS
+movies_qualities_dom = cfg.MOVIES_QUALITIES
+movies_languages_dom = cfg.MOVIES_LANGUAGES
 
 # DOM
 element_movies_pages = cfg.MOVIES_PAGES
@@ -44,6 +49,7 @@ elements_text = cfg.MOVIES_INFO
 elements_href = cfg.MOVIES_INFO_HREF
 element_protection_click = cfg.PROTECTION_CLICK
 element_protection_link = cfg.PROTECTION_LINK
+element_check = cfg.CHECK_ALIVE
 
 # SteelSheet
 ssComboBox = cfg.COMBOBOX
@@ -60,16 +66,18 @@ NUMBER_LINKS_HOST = 0
 
 class Master(QObject):
     initialization = pyqtSignal()
+    initialization_choices = pyqtSignal()
     scrapping = pyqtSignal(str, int, str)
     start = pyqtSignal()
     sayonara = pyqtSignal()
+    check = pyqtSignal()
 
 class Application(QWidget):
 
     def __init__(self):
         super(Application, self).__init__()
         self.init_app()
-        self.init_thread()
+        self.init_stuffs()
         self.master.start.emit()
 
     def init_app(self):
@@ -87,14 +95,11 @@ class Application(QWidget):
         self.movies_qualities = QComboBox(self)
         self.movies_qualities.setGeometry(50, 50, 400, 35)
         self.movies_qualities.setStyleSheet(ssComboBox)
-        for text,url in movies_qualities_list:
-            self.movies_qualities.addItem(text)
+        self.movies_qualities.addItem("Tous")
 
         self.movies_languages = QComboBox(self)
         self.movies_languages.setGeometry(50, 50, 400, 35)
         self.movies_languages.setStyleSheet(ssComboBox)
-        for text,url in movies_languages_list:
-            self.movies_languages.addItem(text)
 
         self.movies_host = QComboBox(self)
         self.movies_host.setGeometry(50, 50, 400, 35)
@@ -160,6 +165,8 @@ class Application(QWidget):
         self.mainLayout.addWidget(self.horizontalGroupBox)
         self.setLayout(self.mainLayout)
 
+        self.bt_start.setEnabled(False)
+
         self.show()
 
     def change_title(self, text):
@@ -171,6 +178,12 @@ class Application(QWidget):
     def enable_bt_quit(self, bool):
         self.bt_start.setEnabled(bool)
 
+    def load_qualities(self, list):
+        self.movies_qualities.addItems(list)
+
+    def load_languages(self, list):
+        self.movies_languages.addItems(list)
+
     def sayonara(self):
         self.close()
         self.thread.quit()
@@ -178,33 +191,25 @@ class Application(QWidget):
     def start_scrapping(self):
 
         website = url
-
-        # Quality
-        quality = str(self.movies_qualities.currentText())
-        for q,u in movies_qualities_list:
-            if (q == quality):
-                website = website + u
-
-        # Language
-        language = str(self.movies_languages.currentText())
-        for l,u in movies_languages_list:
-            if (l == language):
-                website = website + u
+        pagesOk = False
 
         # Pages
-        pages = str(self.movies_pages.text())
-        if (pages == ""):
-            pages = 1
-        else:
-            pages = int(pages)
+        try:
+            pages = int(self.movies_pages.text())
+            if (pages > 20):
+                self.change_description("Pages is too high and you fuckin' know it!")
+            else:
+                pagesOk = True
+        except:
+            self.change_description("A fucking error occured with number of pages!!")
 
-        # Host
-        host = str(self.movies_host.currentText())
+        if (pagesOk):
+            # Host
+            host = str(self.movies_host.currentText())
+            # Start scrapping
+            self.master.scrapping.emit(website, pages, host)
 
-        # Start scrapping
-        self.master.scrapping.emit(website, pages, host)
-
-    def init_thread(self):
+    def init_stuffs(self):
 
         self.thread = QThread()
         self.thread.start()
@@ -216,14 +221,19 @@ class Application(QWidget):
         self.worker.description.connect(self.change_description)
         self.worker.start.connect(self.worker.start_animation)
         self.worker.bt_start.connect(self.enable_bt_quit)
+        self.worker.c_qualities.connect(self.load_qualities)
+        self.worker.c_languages.connect(self.load_languages)
 
         self.master = Master()
         self.master.start.connect(self.worker.start)
         self.master.initialization.connect(self.worker.init_webdriver)
+        self.master.initialization_choices.connect(self.worker.init_choices)
         self.master.scrapping.connect(self.worker.scrapping)
+        self.master.check.connect(self.worker.check_website)
 
         # Init browser
         self.master.initialization.emit()
+        self.master.initialization_choices.emit()
 
 
 class Scrapper(QObject):
@@ -233,18 +243,22 @@ class Scrapper(QObject):
     title = pyqtSignal(str)
     description = pyqtSignal(str)
     bt_start = pyqtSignal(bool)
+    c_qualities = pyqtSignal(list)
+    c_languages = pyqtSignal(list)
 
     # Variables
     browser = None
     summary = []
+    qualities = []
+    languages = []
 
     # Starting browser
     def init_webdriver(self):
         self.description.emit("Initialization of browser")
         try:
-            self.options = Options()
-            self.options.add_argument('--headless')
-            self.browser = webdriver.Firefox(options=self.options)
+            self.opt = Options()
+            self.opt.add_argument(options)
+            self.browser = webdriver.Firefox(options=self.opt)
             self.description.emit("Ready for scrapping")
         except NoSuchWindowException as e:
             print_newline('No GUI on system :(')
@@ -252,51 +266,104 @@ class Scrapper(QObject):
             print_newline('Error when creating instance of webdrier :(')
             self.description.emit("Error when creating instance of webdrier :(")
 
+    # Check if the website is alive or not
+    def check_website(self):
+
+        alive = False
+
+        website = url + url_movies_all
+        self.description.emit("Checking if the website is alive ...")
+        self.browser.get(website)
+        self.browser.implicitly_wait(waiting_time)
+
+        # NOTE: It's a mess here
+        # 503 or not?
+        try:
+            error_check_dom = self.browser.find_element_by_xpath(element_check)
+            if (error_check_dom.text != "503"):
+                alive = True
+        except:
+            alive = True
+
+        if (not alive):
+            self.description.emit("The website is down my friend :(")
+
+        return alive
+
+    # Scrapping qualities and languages
+    def init_choices(self):
+
+        if (self.check_website()):
+            website = url + url_movies_all
+            self.description.emit("Initialization qualities and languages ...")
+            self.browser.get(website)
+            self.browser.implicitly_wait(waiting_time)
+
+            # Qualities
+            qualities_dom = self.browser.find_elements_by_xpath(movies_qualities_dom)
+            for q in qualities_dom:
+                self.qualities.append(q.text)
+            self.c_qualities.emit(self.qualities)
+
+            # Languages
+            languages_dom = self.browser.find_elements_by_xpath(movies_languages_dom)
+            for l in languages_dom:
+                self.languages.append(l.text)
+            self.c_languages.emit(self.languages)
+
+            self.description.emit("Initialization complete and i'm fucking ready !")
+            self.bt_start.emit(True)
+        else:
+            pass
+
     # Start scrapping links
     def scrapping(self, website, pages, host):
 
-        self.bt_start.emit(False)
+        if (self.check_website()):
+            self.bt_start.emit(False)
 
-        # Variables
-        u = 0
-        movies_links = []
-        movies = []
-        links = []
-        resume = ""
+            # Variables
+            u = 0
+            movies_links = []
+            movies = []
+            links = []
+            resume = ""
 
-        try:
+            try:
 
-            print("Here we go!!")
-            self.description.emit("Here we go ...")
+                print("Here we go!!")
+                self.description.emit("Here we go ...")
 
-            # Getting pages's links of movies
-            movies_links = self.getting_links(website, pages)
+                # Getting pages's links of movies
+                movies_links = self.getting_links(website, pages)
 
-            # Getting informations of each movie
-            movies = self.getting_informations(movies_links)
+                # Getting informations of each movie
+                movies = self.getting_informations(movies_links)
 
-            # Getting dowload links
-            links = self.getting_download_links(movies, host)
+                # Getting dowload links
+                links = self.getting_download_links(movies, host)
 
-            # Saving the informations in txt file
-            self.save_movies(links)
+                # Saving the informations in txt file
+                self.save_movies(links)
 
-            print_erase("Job done!")
+                print_erase("Job done!")
 
-            for e in self.summary:
-                resume = resume + e + "\n"
+                for e in self.summary:
+                    resume = resume + e + "\n"
 
-            self.description.emit(resume)
-            self.bt_start.emit(True)
+                self.description.emit(resume)
+                self.bt_start.emit(True)
 
-        except NoSuchWindowException as e:
-            print_newline('No GUI on system :(')
-            self.bt_start.emit(True)
+            except NoSuchWindowException as e:
+                print_newline('No GUI on system :(')
+                self.bt_start.emit(True)
 
-        finally:
-            print_newline("Sayonara my friend :D\n")
-            self.browser.quit()
-            self.bt_start.emit(True)
+            finally:
+                print_newline("Sayonara my friend :D\n")
+                self.browser.quit()
+                self.bt_start.emit(True)
+        else:
+            pass
 
     def start_animation(self):
         clear()
@@ -344,7 +411,6 @@ class Scrapper(QObject):
         global NUMBER_LINKS
         print_erase("Getting informations of each movie...")
         self.description.emit("Getting informations of each movie...")
-        # BUG: Take a while for getting informations of each movie
         for m in movies_links:
             try:
                 wait()
@@ -383,7 +449,6 @@ class Scrapper(QObject):
         global NUMBER_LINKS_HOST
         for movie in movies:
             try:
-                # BUG: Can't get a specific host
                 for key,value in movie:
                     if (isinstance(value, str)):
                         if ("http" in value):
