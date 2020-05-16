@@ -71,6 +71,7 @@ class Master(QObject):
     start = pyqtSignal()
     sayonara = pyqtSignal()
     check = pyqtSignal()
+    quit = pyqtSignal()
 
 class Application(QWidget):
 
@@ -186,6 +187,7 @@ class Application(QWidget):
 
     def sayonara(self):
         self.close()
+        self.master.quit.emit()
         self.thread.quit()
 
     def start_scrapping(self):
@@ -230,6 +232,7 @@ class Application(QWidget):
         self.master.initialization_choices.connect(self.worker.init_choices)
         self.master.scrapping.connect(self.worker.scrapping)
         self.master.check.connect(self.worker.check_website)
+        self.master.quit.connect(self.worker.quit_webdriver)
 
         # Init browser
         self.master.initialization.emit()
@@ -251,6 +254,9 @@ class Scrapper(QObject):
     summary = []
     qualities = []
     languages = []
+
+    def quit_webdriver(self):
+        self.browser.quit()
 
     # Starting browser
     def init_webdriver(self):

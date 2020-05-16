@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
+## [0.7.3] - 16-05-2020
+
+### Added
+
+- Properly quit the script.
+
 ## [0.7.2] - 16-05-2020
 
 ### Added
