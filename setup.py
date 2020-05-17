@@ -20,17 +20,12 @@ if os.path.isfile(requirements_path):
 class PreInstallCommand(install):
     """Pre-installation for installation mode."""
     def run(self):
-        check_call("wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz".split())
-        check_call("tar -xzvf geckodriver-v0.26.0-linux64.tar.gz".split())
-        check_call("rm geckodriver-v0.26.0-linux64.tar.gz".split())
-        check_call("sudo mv geckodriver /usr/local/bin".split())
-        check_call("pip install -r requirements.txt --user".split())
         install.run(self)
 
 
 setup(
     name = cfg.NAME,
-    version = cfg.VERSION,
+    version = cfg.VERSION[1:],
     description = cfg.DESCRIPTION,
     license = "MIT",
     long_description = long_description,
