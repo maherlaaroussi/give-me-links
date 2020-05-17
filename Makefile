@@ -1,22 +1,14 @@
-MODULE := gml
+MODULE := "gml/app.py"
 BLUE = '\033[0;34m'
 NC = '\033[0m'
 .DEFAULT_GOAL := run
 
 run:
-	@python3 -m $(MODULE)
-
-run_auto:
-	@printf "2\n1\n3\n1\n" | python3 -m $(MODULE) --arg myArg.
+	@python3 $(MODULE)
 
 install:
-	@chmod +x ./install.sh
-	@chmod +x ./before_run.sh
-	@chmod +x ./clean.sh
-	@./install.sh
-
-prepare:
-	@./before_run.sh
+	@python3 -m setup install --user
+	@echo "GML is now installed!"
 
 clean:
 	@./clean.sh

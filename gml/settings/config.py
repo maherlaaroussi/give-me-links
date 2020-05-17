@@ -3,25 +3,21 @@ import platform
 class Common(object):
     # Project
     AUTHOR = 'Maher LAAROUSSI'
-    VERSION = "v0.7.2"
-    NAME = "GML"
+    VERSION = "v0.7.3"
+    NAME = "gml"
+    DESCRIPTION = "A link scrapper."
     HEADER = NAME + " " + VERSION + " by " + AUTHOR
 
     # URLs
-    URL = "https://www2.tirexo.org"
-    URL_MOVIES_ALL = "/films-gratuit/"
-    URL_MOVIES_BLURAY1080 = "/films-gratuit/qualite-Blu-Ray+1080p/"
-    URL_MOVIES_UHD = "/films-gratuit/qualite-ULTRA+HD+(x265)/"
-    URL_MOVIES_FRENCH = "langue-French/"
-    URL_MOVIES_VOSTFR = "langue-VOSTFR/"
-    URL_MOVIES_MULTI = "langue-MULTI/"
+    URL = "https://www2.tirexo.org/"
+    URL_MOVIES_ALL = "films-gratuit/"
     URL_MOVIES_LANGUAGES_ALL = ""
 
     # DOM
     MOVIES_QUALITIES = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/optgroup/option"
-    MOVIES_QUALITY_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/option[text()='option_quality']"
+    MOVIES_QUALITY_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/optgroup/option[text()='option_quality']"
     MOVIES_LANGUAGES = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[4]/div/select/option"
-    MOVIES_LANGUAGES_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/option[text()='option_quality']"
+    MOVIES_LANGUAGE_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/option[text()='option_quality']"
     MOVIES_PAGES = "/html/body/div[1]/div/div/div/div[3]/div/div/a[2]"
     MOVIES_PAGES_BIS = "/html/body/div[1]/div/div/div/div[2]/div/div/a[2]"
     MOVIES_INFO = [
@@ -36,24 +32,16 @@ class Common(object):
     ]
     PROTECTION_CLICK = "/html/body/center/div/div[2]/div/center/form/input"
     PROTECTION_LINK = "/html/body/center/div/div[2]/div/div[1]/a"
-    CHECK_ALIVE = "/html/body/div/div/h1"
+    CHECK_ALIVE = "/html/body/div[1]/div/header/nav/a"
 
     # ComboBox
-    QUALITIES = [
-                    ('All', URL_MOVIES_ALL),
-                    ('Blu-Ray 1080p', URL_MOVIES_BLURAY1080),
-                    ('UHD 2160p x265', URL_MOVIES_UHD)
-                ]
-    LANGUAGES = [
-                    ('All', URL_MOVIES_LANGUAGES_ALL),
-                    ('Multi', URL_MOVIES_MULTI),
-                    ('French', URL_MOVIES_FRENCH),
-                    ('VOSTFR', URL_MOVIES_VOSTFR)
-                ]
     HOSTS = [
-                    ('All'),
+                    ('Tous'),
                     ('UpToBox'),
-                    ('1fichier')
+                    ('1fichier'),
+                    ('Rapidgator'),
+                    ('Turbobit'),
+                    ('Uploaded')
                 ]
 
     # StyleSheet
@@ -71,10 +59,13 @@ class Common(object):
     WAITING = 0.5
     OS_NOW = platform.system()
     JOKES = [
-        "go drink a coffee",
-        "go watch some movies or tv shows",
-        "i like you so fuck off and go eat",
-        "shut the fuck off and go drink beers"
+        "Go drink a coffee",
+        "Go watch some movies or tv shows",
+        "I like you so fuck off and go eat",
+        "Shut the fuck up and go drink beers",
+        "I'm tired of being your slave :(",
+        "Can i get some money for my work?",
+        "I'm in love with Maher *_*"
     ]
 
 class Local(Common):

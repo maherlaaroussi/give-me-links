@@ -5,15 +5,9 @@ before_script:
   - apt-get update -y
   - apt-get upgrade -y
   - apt-get install -y firefox-esr python-virtualenv python3-pip
-  - wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
-  - tar -xzvf geckodriver-v0.26.0-linux64.tar.gz
-  - rm geckodriver-v0.26.0-linux64.tar.gz
-  - mv geckodriver /usr/local/bin
   - python3 --version
   - virtualenv env
-  - python3 -m venv env
-  - call ./env/bin/activate
-  - python3 -m pip install -r requirements.txt
+  - make install
 
 stages:
   - test
@@ -21,4 +15,4 @@ stages:
 test:
   stage: test
   script:
-    - make run_auto
+    - make run

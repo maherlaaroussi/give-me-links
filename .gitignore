@@ -1,4 +1,7 @@
 env
 **/__pycache__/
 geckodriver.log
+gml/geckodriver.log
 data
+gml.egg-info
+build
