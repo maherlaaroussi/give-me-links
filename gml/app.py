@@ -4,10 +4,6 @@
 # TODO: Ask if user want to download it on the NAS
 # TODO: Max links (Only 1 if there are a lot for example) per movie with break
 
-# TODO: Change for going to page choosed by quality and languages
-#       (before it was tuples and now is just a list),
-#       use dom to select with replace
-
 from settings import auto_config as cfg
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
@@ -63,6 +59,8 @@ NUMBER_LINKS_HOST = 0
 
 
 class Master(QObject):
+    """Manage the thread."""
+
     initialization = pyqtSignal()
     initialization_choices = pyqtSignal()
     scrapping = pyqtSignal(str, int, str, str, str)
@@ -73,15 +71,17 @@ class Master(QObject):
 
 
 class Application(QWidget):
+    """The GUI Application."""
 
     def __init__(self):
+        """Initialize the application."""
         super(Application, self).__init__()
         self.init_app()
         self.init_stuffs()
         self.master.start.emit()
 
     def init_app(self):
-
+        """Initialize the elements of GUI."""
         # Main window
         self.setFixedSize(640, 600)
         self.setWindowTitle(header)
@@ -173,29 +173,35 @@ class Application(QWidget):
         self.show()
 
     def change_title(self, text):
+        """Change text of label title."""
         self.title_label.setText(text)
 
     def change_description(self, text):
+        """Change text of label description."""
         self.description_label.setText(text)
 
     def enable_bt_quit(self, bool):
+        """Enable of disable button quit."""
         self.bt_start.setEnabled(bool)
 
     def load_qualities(self, list):
+        """Load qualities in the combobox."""
         for item, value in list:
             self.movies_qualities.addItem(item)
 
     def load_languages(self, list):
+        """Load languages in the combobox."""
         for item, value in list:
             self.movies_languages.addItem(item)
 
     def sayonara(self):
+        """Quit the application."""
         self.close()
         self.master.quit.emit()
         self.thread.quit()
 
     def start_scrapping(self):
-
+        """Start scrapping links from website."""
         website = url + url_movies_all
         pagesOk = False
 
@@ -221,7 +227,7 @@ class Application(QWidget):
             self.master.scrapping.emit(website, pages, host, quality, language)
 
     def init_stuffs(self):
-
+        """Initialize thread, master and worker."""
         self.thread = QThread()
         self.thread.start()
 
@@ -249,6 +255,7 @@ class Application(QWidget):
 
 
 class Scrapper(QObject):
+    """The only scrapper which can do anything."""
 
     # Sinals
     start = pyqtSignal()
@@ -265,10 +272,12 @@ class Scrapper(QObject):
     t_languages = []
 
     def quit_webdriver(self):
+        """Close the browser properly."""
         self.browser.quit()
 
     # Starting browser
     def init_webdriver(self):
+        """Initialize the browser."""
         self.description.emit("Initialization of browser")
         try:
             self.opt = Options()
@@ -284,15 +293,13 @@ class Scrapper(QObject):
 
     # Check if the website is alive or not
     def check_website(self):
-
+        """Check if the website is not down."""
         alive = False
-
         website = url + url_movies_all
         self.description.emit("Checking if the website is alive ...")
         self.browser.get(website)
         self.browser.implicitly_wait(waiting_time)
 
-        # NOTE: It's a mess here
         # 503 or not?
         try:
             error_check_dom = self.browser.find_element_by_xpath(element_check)
@@ -304,20 +311,19 @@ class Scrapper(QObject):
         if (not alive):
             self.description.emit("The website is down my friend :(")
             self.start.emit(False)
+            self.quit.emit(False)
 
         return alive
 
     # Scrapping qualities and languages
     def init_choices(self):
-
+        """Get all qualities and languages available from website."""
         if (self.check_website()):
 
             website = url + url_movies_all
             self.description.emit("Initialization qualities and languages ...")
             self.browser.get(website)
             self.browser.implicitly_wait(waiting_time)
-
-            # TODO: Get qualities and languages  with their values to build url
 
             # Qualities
             qualities_dom = self.browser \
@@ -340,9 +346,12 @@ class Scrapper(QObject):
         else:
             pass
 
+    # BUG:  Fix the error when trying to do another scrapping.
+    #       selenium.common.exceptions.InvalidSessionIdException: Message:
+    #       Tried to run command without establishing a connection
     # Start scrapping links
     def scrapping(self, website, pages, host, quality, language):
-
+        """Get links from the website."""
         if (self.check_website()):
 
             self.bt_start.emit(False)
@@ -356,7 +365,7 @@ class Scrapper(QObject):
             try:
 
                 msg = "Here we go!!"
-                print(msg)
+                print_erase(msg)
                 self.description.emit(msg)
 
                 # Getting pages's links of movies
@@ -385,12 +394,13 @@ class Scrapper(QObject):
                 self.bt_start.emit(True)
 
             finally:
-                self.browser.quit()
+                self.browser.close()
                 self.bt_start.emit(True)
         else:
             pass
 
     def start_animation(self):
+        """Show an animation in the cmd."""
         clear()
         animation = "|/-\\"
         for i in range(10):
@@ -401,7 +411,7 @@ class Scrapper(QObject):
         clear_with_msg()
 
     def getting_links(self, website, pages, quality, language):
-
+        """Get the url's pages of movies."""
         current_page = 1
         movies_urls = []
         pages = int(pages)
@@ -452,6 +462,7 @@ class Scrapper(QObject):
         return movies_urls
 
     def getting_informations(self, movies_links):
+        """Get all informtions about movies scrapped."""
         movies = []
         u = 1
         global NUMBER_LINKS
@@ -477,15 +488,16 @@ class Scrapper(QObject):
                 msg = "[" + str(u) + "/" + str(len(movies_links)) + "]\nGetting: " + movie[0][1]
                 self.description.emit(msg)
             except WebDriverException as e:
-                print_newline("[" + str(u) + "/" + str(len(movies_links)) + "] Error: WebDriverException : " + format(e))
+                print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Error: WebDriverException : " + format(e))
             except NoSuchElementException as e:
-                print_newline("[" + str(u) + "/" + str(len(movies_links)) + "] Error: element not found : " + format(e))
+                print_erase("[" + str(u) + "/" + str(len(movies_links)) + "] Error: element not found : " + format(e))
             finally:
                 u = u + 1
 
         return movies
 
     def getting_download_links(self, movies, host):
+        """Get the protected links."""
         self.description.emit("Getting download links")
         u = 1
         links = []
@@ -524,6 +536,7 @@ class Scrapper(QObject):
         return links
 
     def bypass_protection(self, link):
+        """Bypass protection to get download links."""
         wait()
         self.browser.get(link)
         self.browser.implicitly_wait(waiting_time)
@@ -535,6 +548,7 @@ class Scrapper(QObject):
         return download_link
 
     def save_movies(self, links):
+        """Save all informations about each movie on a txt file."""
         timestamp = int(time.time())
         file_name = "gml/data/" + str(timestamp) + ".txt"
         os.makedirs(os.path.dirname(file_name), exist_ok=True)
@@ -548,12 +562,14 @@ class Scrapper(QObject):
 
 
 def print_erase(str):
+    """Print a text with erasing the line."""
     sys.stdout.write('\033[2K\033[1G')
     sys.stdout.write(str)
     sys.stdout.flush()
 
 
 def print_erase_persistent(str):
+    """Print a text with erasing the line and new line."""
     sys.stdout.write('\033[2K\033[1G')
     sys.stdout.write(str)
     sys.stdout.write("\n")
@@ -561,6 +577,7 @@ def print_erase_persistent(str):
 
 
 def clear():
+    """Clear the cmd."""
     if (os_now == "Linux"):
         os.system('clear')
     else:
@@ -568,6 +585,7 @@ def clear():
 
 
 def clear_with_msg():
+    """Clear the cmd and show the header message."""
     if (os_now == "Linux"):
         os.system('clear')
     else:
@@ -576,16 +594,19 @@ def clear_with_msg():
 
 
 def print_newline(str):
+    """Print message in a new line."""
     sys.stdout.write('\n')
     sys.stdout.write(str)
     sys.stdout.flush()
 
 
 def wait():
+    """Sleep some seconds."""
     time.sleep(waiting)
 
 
 def run():
+    """Run the PyQt5 application."""
     # PyQt5
     app = QApplication(sys.argv)
     window = Application()

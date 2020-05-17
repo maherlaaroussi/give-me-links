@@ -6,11 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ## [Unreleased]
 
-## [0.7.3] - 16-05-2020
+## [0.7.4] - XX-05-2020
+
+### Added
+
+### Changed
+
+- Correct the Makefile for a cleaning install.
+
+## [0.7.3] - 17-05-2020
 
 ### Added
 
 - Properly quit the script.
+- Succefully generate the right link with the language and quality chosen.
+
+### Changed
+
+- Correction of the algo to filter host.
 
 ## [0.7.2] - 16-05-2020
 
@@ -52,4 +65,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 [0.7.0]: https://gitlab.com/maherlaaroussi/give-me-links/-/tags/v0.7
 [0.7.1]: https://gitlab.com/maherlaaroussi/give-me-links/-/tags/v0.7.1
 [0.7.2]: https://gitlab.com/maherlaaroussi/give-me-links/-/tags/v0.7.2
+[0.7.3]: https://gitlab.com/maherlaaroussi/give-me-links/-/tags/v0.7.3
+[0.7.4]: https://gitlab.com/maherlaaroussi/give-me-links/-/tags/v0.7.4
 [unreleased]: https://gitlab.com/maherlaaroussi/give-me-links/-/compare/v0.7...master

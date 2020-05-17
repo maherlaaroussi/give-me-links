@@ -3,10 +3,11 @@ import platform
 class Common(object):
     # Project
     AUTHOR = 'Maher LAAROUSSI'
-    VERSION = "v0.7.3"
+    VERSION = "v0.7.4"
     NAME = "gml"
+    REAL_NAME = "gml"
     DESCRIPTION = "A link scrapper."
-    HEADER = NAME + " " + VERSION + " by " + AUTHOR
+    HEADER = REAL_NAME + " " + VERSION + " by " + AUTHOR
 
     # URLs
     URL = "https://www2.tirexo.org/"
