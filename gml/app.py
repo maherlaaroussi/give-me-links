@@ -15,7 +15,7 @@ import os
 import sys
 import time
 import random
-from PyQt5.QtGui import QIntValidator
+from PyQt5.QtGui import QIntValidator, QPixmap
 from PyQt5.QtWidgets import QComboBox, QLineEdit, QApplication, \
                             QGroupBox, QHBoxLayout, QVBoxLayout, \
                             QPushButton, QWidget, QLabel, QSizePolicy
@@ -54,6 +54,7 @@ ssTitle = cfg.LBL_TITLE
 ssLine = cfg.LINE
 ssPages = cfg.LBL_PAGES
 
+# Global
 NUMBER_LINKS = 0
 NUMBER_LINKS_HOST = 0
 
@@ -68,6 +69,9 @@ class Master(QObject):
     sayonara = pyqtSignal()
     check = pyqtSignal()
     quit = pyqtSignal()
+    show_scrapping_by_name_mode = pyqtSignal()
+    show_scrapping_randomly_mode = pyqtSignal()
+    show_initialization_mode = pyqtSignal()
 
 
 class Application(QWidget):
@@ -78,14 +82,19 @@ class Application(QWidget):
         super(Application, self).__init__()
         self.init_app()
         self.init_stuffs()
-        self.master.start.emit()
 
     def init_app(self):
         """Initialize the elements of GUI."""
         # Main window
+        # self.setWindowIcon(QtGui.QIcon("icon.png"))
         self.setFixedSize(640, 600)
         self.setWindowTitle(header)
         self.setStyleSheet("background-color: black;")
+
+        self.label_image = QLabel(self)
+        self.init_image = QPixmap("gml/resources/maher.png")
+        self.label_image.setPixmap(self.init_image.scaled(200, 200, Qt.KeepAspectRatio))
+        self.label_image.setAlignment(Qt.AlignCenter)
 
         self.title_label = QLabel("Give Me Links")
         self.title_label \
@@ -135,7 +144,7 @@ class Application(QWidget):
         self.descGroupBox = QGroupBox()
 
         self.layout2 = QVBoxLayout()
-        self.layout3 = QHBoxLayout()
+        self.layout3 = QVBoxLayout()
 
         self.layout2.addWidget(self.title_label)
         self.layout2.addWidget(self.movies_qualities)
@@ -156,6 +165,7 @@ class Application(QWidget):
         self.bt_quit.clicked.connect(self.sayonara)
         self.layout.addWidget(self.bt_quit)
 
+        self.layout3.addWidget(self.label_image)
         self.layout3.addWidget(self.description_label)
 
         self.horizontalGroupBox.setLayout(self.layout)
@@ -172,6 +182,29 @@ class Application(QWidget):
 
         self.show()
 
+    def show_initialization_mode(self):
+        """Show the initialization interface."""
+        self.hide_all_mode()
+        self.label_image.show()
+        self.descGroupBox.show()
+
+    def show_scrapping_randomly_mode(self):
+        """Show the first choice."""
+        self.hide_all_mode()
+        self.label_image.hide()
+        self.vGroupBox.show()
+        self.descGroupBox.show()
+        self.horizontalGroupBox.show()
+
+    def show_scrapping_by_name_mode(self):
+        """Show te second choice."""
+
+    def hide_all_mode(self):
+        """Hide all elements of th application."""
+        self.vGroupBox.hide()
+        self.horizontalGroupBox.hide()
+        self.descGroupBox.hide()
+
     def change_title(self, text):
         """Change text of label title."""
         self.title_label.setText(text)
@@ -180,19 +213,40 @@ class Application(QWidget):
         """Change text of label description."""
         self.description_label.setText(text)
 
+    def enable_qualities(self, bool):
+        """Change status of combobox qualities."""
+        self.movies_qualities.setEnabled(bool)
+
+    def enable_languages(self, bool):
+        """Change status of combobox languages."""
+        self.movies_languages.setEnabled(bool)
+
+    def enable_hosts(self, bool):
+        """Change status of combobox hosts."""
+        self.movies_host.setEnabled(bool)
+
+    def enable_pages(self, bool):
+        """Change status of combobox hosts."""
+        self.movies_pages.setEnabled(bool)
+
     def enable_bt_quit(self, bool):
         """Enable of disable button quit."""
         self.bt_start.setEnabled(bool)
 
     def load_qualities(self, list):
         """Load qualities in the combobox."""
+        list.sort(key = lambda x: x[0])
         for item, value in list:
-            self.movies_qualities.addItem(item)
+            if (item != "Tous"):
+                self.movies_qualities.addItem(item)
 
     def load_languages(self, list):
         """Load languages in the combobox."""
+        list.sort(key = lambda x: x[0])
+        self.movies_languages.addItem("Tous")
         for item, value in list:
-            self.movies_languages.addItem(item)
+            if (item != "Tous"):
+                self.movies_languages.addItem(item)
 
     def sayonara(self):
         """Quit the application."""
@@ -228,6 +282,9 @@ class Application(QWidget):
 
     def init_stuffs(self):
         """Initialize thread, master and worker."""
+
+        self.show_initialization_mode()
+
         self.thread = QThread()
         self.thread.start()
 
@@ -236,22 +293,29 @@ class Application(QWidget):
         self.worker.start.connect(self.worker.start_animation)
         self.worker.title.connect(self.change_title)
         self.worker.description.connect(self.change_description)
-        self.worker.start.connect(self.worker.start_animation)
         self.worker.bt_start.connect(self.enable_bt_quit)
         self.worker.load_qualities.connect(self.load_qualities)
         self.worker.load_languages.connect(self.load_languages)
+        self.worker.show_scrapping_randomly_mode.connect(self.show_scrapping_randomly_mode)
+        self.worker.c_qualities.connect(self.enable_qualities)
+        self.worker.c_languages.connect(self.enable_languages)
+        self.worker.c_hosts.connect(self.enable_hosts)
+        self.worker.le_pages.connect(self.enable_pages)
 
         self.master = Master()
         self.master.start.connect(self.worker.start)
-        self.master.initialization.connect(self.worker.init_webdriver)
+        self.master.initialization.connect(self.worker.init_all)
         self.master.initialization_choices.connect(self.worker.init_choices)
         self.master.scrapping.connect(self.worker.scrapping)
         self.master.check.connect(self.worker.check_website)
         self.master.quit.connect(self.worker.quit_webdriver)
+        self.master.show_scrapping_by_name_mode.connect(self.show_scrapping_by_name_mode)
+        self.master.show_scrapping_randomly_mode.connect(self.worker.show_scrapping_randomly_mode)
+        self.master.show_initialization_mode.connect(self.show_initialization_mode)
 
-        # Init browser
+        # Init things
         self.master.initialization.emit()
-        self.master.initialization_choices.emit()
+        self.bt_start.setEnabled(True)
 
 
 class Scrapper(QObject):
@@ -260,16 +324,31 @@ class Scrapper(QObject):
     # Sinals
     start = pyqtSignal()
     title = pyqtSignal(str)
+    c_qualities = pyqtSignal(bool)
+    c_languages = pyqtSignal(bool)
+    c_hosts = pyqtSignal(bool)
+    le_pages = pyqtSignal(bool)
     description = pyqtSignal(str)
     bt_start = pyqtSignal(bool)
     load_qualities = pyqtSignal(list)
     load_languages = pyqtSignal(list)
+
+    # Not used by now
+    show_scrapping_randomly_mode = pyqtSignal()
+    show_scrapping_by_name_mode = pyqtSignal()
+    show_initialization_mode = pyqtSignal()
 
     # Variables
     browser = None
     summary = []
     t_qualities = []
     t_languages = []
+
+    def init_all(self):
+        self.init_webdriver()
+        self.init_choices()
+        self.show_scrapping_randomly_mode.emit()
+        self.start_animation()
 
     def quit_webdriver(self):
         """Close the browser properly."""
@@ -352,15 +431,19 @@ class Scrapper(QObject):
     # Start scrapping links
     def scrapping(self, website, pages, host, quality, language):
         """Get links from the website."""
+
+        summary = []
+
         if (self.check_website()):
 
-            self.bt_start.emit(False)
+            self.enable_choices(False)
 
             # Variables
             movies_links = []
             movies = []
             links = []
             resume = ""
+            msg = ""
 
             try:
 
@@ -387,17 +470,23 @@ class Scrapper(QObject):
                     resume = resume + e + "\n"
 
                 self.description.emit(resume)
-                self.bt_start.emit(True)
+                self.enable_choices(True)
 
             except NoSuchWindowException:
                 print_newline('No GUI on system :(')
-                self.bt_start.emit(True)
+                self.enable_choices(True)
 
             finally:
-                self.browser.close()
-                self.bt_start.emit(True)
+                self.enable_choices(True)
         else:
             pass
+
+    def enable_choices(self, bool):
+        self.c_qualities.emit(bool)
+        self.c_languages.emit(bool)
+        self.c_hosts.emit(bool)
+        self.le_pages.emit(bool)
+        self.bt_start.emit(bool)
 
     def start_animation(self):
         """Show an animation in the cmd."""
@@ -466,6 +555,7 @@ class Scrapper(QObject):
         movies = []
         u = 1
         global NUMBER_LINKS
+        NUMBER_LINKS = 0
         self.description.emit("Getting informations of each movie...")
         for m in movies_links:
             try:
@@ -479,6 +569,8 @@ class Scrapper(QObject):
                                 self.browser.find_element_by_xpath(value).text
                                 ))
                 for e in elements_href:
+                    # FIXME: Change the xpath for getting links
+                    # NOTE: The xpath changed totally and the href too
                     for a in self.browser.find_elements_by_xpath(e[1]):
                         if (e[0] == "Link"):
                             NUMBER_LINKS = NUMBER_LINKS + 1
@@ -504,6 +596,7 @@ class Scrapper(QObject):
         joke = "\n" + random.choice(jokes)
         global NUMBER_LINKS
         global NUMBER_LINKS_HOST
+        NUMBER_LINKS_HOST = 0
         for movie in movies:
             try:
                 for key, value in movie:
@@ -530,7 +623,8 @@ class Scrapper(QObject):
             except WebDriverException:
                 print_erase("[" + str(u) + "/" + str(NUMBER_LINKS) + "] Skipping ...")
 
-        self.summary.append("My lord, here is a summary!\nMovies: " + str(len(movies)) + " | Links: " + str(NUMBER_LINKS_HOST))
+        # FIXME: Showing this message twice if we ran the scrapping twice
+        self.summary.append("My lord,my lord!! Here is a summary just for you :)\nMovies: " + str(len(movies)) + " | Links: " + str(NUMBER_LINKS_HOST))
         self.description.emit(self.summary[len(self.summary) - 1])
 
         return links

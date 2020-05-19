@@ -10,9 +10,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 
 ### Added
 
+- Add the initialization interface when app is starting and getting data.
+
 ### Changed
 
-- Correct the Makefile for a cleaning install.
+- Correct the Makefile for a cleaning install & run.
+
+### Fixed
+
+- Fix the bug when trying to scrap a second time.
 
 ## [0.7.3] - 17-05-2020
 

@@ -5,7 +5,7 @@ class Common(object):
     AUTHOR = 'Maher LAAROUSSI'
     VERSION = "v0.7.4"
     NAME = "gml"
-    REAL_NAME = "gml"
+    REAL_NAME = NAME.upper()
     DESCRIPTION = "A link scrapper."
     HEADER = REAL_NAME + " " + VERSION + " by " + AUTHOR
 
@@ -15,9 +15,9 @@ class Common(object):
     URL_MOVIES_LANGUAGES_ALL = ""
 
     # DOM
-    MOVIES_QUALITIES = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/optgroup/option"
+    MOVIES_QUALITIES = "/html/body/div[1]/div/div/div/div[1]/div[2]/div[3]/div/select/optgroup/option"
     MOVIES_QUALITY_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/optgroup/option[text()='option_quality']"
-    MOVIES_LANGUAGES = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[4]/div/select/option"
+    MOVIES_LANGUAGES = "/html/body/div[1]/div/div/div/div[1]/div[2]/div[4]/div/select/option"
     MOVIES_LANGUAGE_SELECT = "/html/body/div[1]/div/div/div/div[2]/div[2]/div[3]/div/select/option[text()='option_quality']"
     MOVIES_PAGES = "/html/body/div[1]/div/div/div/div[3]/div/div/a[2]"
     MOVIES_PAGES_BIS = "/html/body/div[1]/div/div/div/div[2]/div/div/a[2]"
@@ -37,16 +37,16 @@ class Common(object):
 
     # ComboBox
     HOSTS = [
-                    ('Tous'),
-                    ('UpToBox'),
-                    ('1fichier'),
-                    ('Rapidgator'),
-                    ('Turbobit'),
-                    ('Uploaded')
-                ]
+                ('Tous'),
+                ('UpToBox'),
+                ('1fichier'),
+                ('Rapidgator'),
+                ('Turbobit'),
+                ('Uploaded')
+    ]
 
     # StyleSheet
-    font_family = "Carlito"
+    font_family = "Arial"
     COMBOBOX = "background-color: black; border-color: white; color: white; font-size: 18px; font-style: regular; font-family: " + font_family
     BTN_START = "background-color: black; border-width: medium; color: white; font-size: 20px; font-style: bold; font-family: " + font_family
     BTN_QUIT = "background-color: black; border-width: medium; color: white; font-size: 20px; font-style: bold; font-family: " + font_family
