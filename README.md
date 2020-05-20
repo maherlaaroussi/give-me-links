@@ -6,7 +6,7 @@ A simple scrapper that get all links of movies on a specific website.
 
 ## How to execute it ?
 
-1. Create and activate the virtualenv
+1. (Optional) Create and activate the virtualenv
 ```bash
 python3 -m venv env
 source ./env/bin/activate

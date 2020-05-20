@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from gml import app
+from gml import gml
 
 if __name__ == '__main__':
-    app.run()
+    gml.run()

@@ -12,16 +12,10 @@ with open("README.md", 'r') as f:
 project_dir = os.path.dirname(os.path.realpath(__file__))
 requirements_path = project_dir + '/requirements.txt'
 install_requires = []
+
 if os.path.isfile(requirements_path):
     with open(requirements_path) as f:
         install_requires = f.read().splitlines()
-
-
-class PreInstallCommand(install):
-    """Pre-installation for installation mode."""
-    def run(self):
-        install.run(self)
-
 
 setup(
     name = cfg.NAME,
@@ -29,12 +23,23 @@ setup(
     description = cfg.DESCRIPTION,
     license = "MIT",
     long_description = long_description,
+    long_description_content_type = "text/markdown",
     author = cfg.AUTHOR,
     author_email = "maher.laaroussi@gmail.com",
-    url = "https://maherlaaroussi.com/",
+    url = "https://gitlab.com/maherlaaroussi/give-me-links",
     packages = [cfg.NAME, cfg.NAME + ".settings"],
     install_requires = install_requires,
-    cmdclass = {
-        'install': PreInstallCommand,
+    classifiers = [
+        "Development Status :: 3 - Alpha",
+        "Programming Language :: Python :: 3.8"
+    ],
+    keywords = "scrapper download links nas synology",
+    python_requires = ">=3.5, <4",
+    extras_require = {
+        "dev": []
     },
+    package_data = {
+        cfg.NAME: ["resources/*"]
+    },
+    include_package_data = True
 )

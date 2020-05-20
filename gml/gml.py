@@ -4,7 +4,7 @@
 # TODO: Ask if user want to download it on the NAS
 # TODO: Max links (Only 1 if there are a lot for example) per movie with break
 
-from settings import auto_config as cfg
+from gml.settings import auto_config as cfg
 from selenium import webdriver
 from selenium.common.exceptions import WebDriverException
 from selenium.common.exceptions import NoSuchWindowException
@@ -20,6 +20,7 @@ from PyQt5.QtWidgets import QComboBox, QLineEdit, QApplication, \
                             QGroupBox, QHBoxLayout, QVBoxLayout, \
                             QPushButton, QWidget, QLabel, QSizePolicy
 from PyQt5.QtCore import QObject, pyqtSignal, QThread, Qt
+
 # CFG
 header = cfg.HEADER
 options = cfg.OPTIONS
@@ -90,6 +91,12 @@ class Application(QWidget):
         self.setFixedSize(640, 600)
         self.setWindowTitle(header)
         self.setStyleSheet("background-color: black;")
+
+        self.king_label = QLabel("A king is below me!")
+        self.king_label \
+            .setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.king_label.setAlignment(Qt.AlignCenter)
+        self.king_label.setStyleSheet(ssDesc)
 
         self.label_image = QLabel(self)
         self.init_image = QPixmap("gml/resources/maher.png")
@@ -165,6 +172,7 @@ class Application(QWidget):
         self.bt_quit.clicked.connect(self.sayonara)
         self.layout.addWidget(self.bt_quit)
 
+        self.layout3.addWidget(self.king_label)
         self.layout3.addWidget(self.label_image)
         self.layout3.addWidget(self.description_label)
 
@@ -185,6 +193,7 @@ class Application(QWidget):
     def show_initialization_mode(self):
         """Show the initialization interface."""
         self.hide_all_mode()
+        self.king_label.show()
         self.label_image.show()
         self.descGroupBox.show()
 
@@ -192,6 +201,7 @@ class Application(QWidget):
         """Show the first choice."""
         self.hide_all_mode()
         self.label_image.hide()
+        self.king_label.hide()
         self.vGroupBox.show()
         self.descGroupBox.show()
         self.horizontalGroupBox.show()
@@ -204,6 +214,8 @@ class Application(QWidget):
         self.vGroupBox.hide()
         self.horizontalGroupBox.hide()
         self.descGroupBox.hide()
+        self.king_label.hide()
+        self.label_image.hide()
 
     def change_title(self, text):
         """Change text of label title."""

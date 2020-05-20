@@ -6,3 +6,4 @@ data
 gml.egg-info
 build
 .ropeproject
+.idea
